@@ -31,7 +31,36 @@ void dump_memory_region(FILE* pMemFile, unsigned long start_address, long length
         }
     }
 }
-
+int main(int argc, char *argv)
+{
+	char *output;
+	pid_t pid = -1;
+	int i;
+	long pret;
+	char mpath[1024]={0};
+	if(argc != 5){
+		return -EINVAL;
+	}
+	for(i=1; i<argc; ++i){
+		if(strcmp(argv[i], "--pid") == 0){
+			i++;
+			pid = atoi(argv[i]);
+			continue;	
+		}
+		if(strcmp(argv[i], "--output") == 0){
+			i++;
+			output = argv[i];
+			continue;	
+		}
+	}
+	if(pid <= 0){
+		return -EINVAL;
+	}
+	if(output == NULL){
+		return -EINVAL;
+	}
+	pret = ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+}
 int main(int argc, char **argv) {
 
     if (argc == 2 || argc == 4)
