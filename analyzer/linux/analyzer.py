@@ -103,7 +103,7 @@ class Analyzer:
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
-            log.debug("No analysis package specified, trying to detect "
+            log.debug("linux No analysis package specified, trying to detect "
                       "it automagically.")
 
             if self.config.category == "file":

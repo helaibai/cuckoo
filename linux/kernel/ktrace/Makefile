@@ -1,5 +1,5 @@
-obj-m += ktrace.o
-naudit-objs := ktrace.o 
+obj-m += probelkm.o
+probelkm-objs := ktrace.o 
 
 EXTRA_CFLAGS=-DLINUX -g
 ifeq ($(shell uname -r|grep xen), 0)

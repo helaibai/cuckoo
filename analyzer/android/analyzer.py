@@ -88,7 +88,7 @@ class Analyzer(object):
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
-            log.info("No analysis package specified, trying to detect it automagically")
+            log.info("android No analysis package specified, trying to detect it automagically")
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
