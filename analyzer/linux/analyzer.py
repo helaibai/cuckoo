@@ -11,6 +11,10 @@ import xmlrpclib
 import traceback
 import time
 import datetime
+try:
+    import magic
+except:
+    magic = None
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
@@ -45,6 +49,35 @@ def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
         log.info("PLS IMPLEMENT DUMP, want to dump %s", file_path)
+def choose_package(path):
+    """file type """
+    f = os.popen('uname -r')
+    t = f.read()
+    f.close()
+    log.debug("current kernel %s",t)
+    if not magic:
+        log.debug("import python magic except; try pip install python-magic")
+        return "generic" 
+    try:
+        if not os.path.exists(path):
+            if path.startswith("http"):
+                return "wget"
+            return "unknow"
+            
+        m = maigc.Magic(mine=True)
+        result = m.from_file(path)
+        if "application" in result:
+            if "x-executable" in result:
+                return "elf"
+            if "x-sharedlib" in result:
+                return "so"
+            if "msword" in result:
+                return "doc"
+        return "generic"
+
+    except Exception as e:
+        log.exception("choose package execpetion: %s", e)
+        return "generic"
 
 class Analyzer:
     """Cuckoo Linux Analyzer.
@@ -96,20 +129,21 @@ class Analyzer:
         @return: operation status.
         """
         self.prepare()
-
+        log.debug("Cuckoo linux -----------------")
         log.debug("Starting analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
 
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
-            log.debug("linux No analysis package specified, trying to detect "
+            log.debug("No analysis package specified, trying to detect "
                       "it automagically.")
 
             if self.config.category == "file":
-                package = "generic"
+                package = choose_package(self.config.file_name) 
             else:
                 package = "wget"
+            log.debug("choose {%s}", package);
 
             # If we weren't able to automatically determine the proper package,
             # we need to abort the analysis.

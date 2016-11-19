@@ -1,0 +1,11 @@
+
+UBUNTU GUEST:
+    1. python magic install
+        1.1 install pip
+            wget https://bootstrap.io/get-pip.py --no-check-certificate
+            sudo python get-pip.py
+        1.2 install magic
+            sudo pip install pyhon-magic
+        1.3 test
+            python -c 'import magic;print("module magic ok")'
+    2.
