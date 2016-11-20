@@ -13,6 +13,7 @@ from lib.common.results import NetlogFile
 from lib.core.config import Config
 
 log = logging.getLogger(__name__)
+klog = "/var/log/kern.log"
 
 class KTRACE(Auxiliary):
     """ktrace catch all syscall."""
@@ -25,24 +26,22 @@ class KTRACE(Auxiliary):
     def start(self):
         pid = os.getpid()
         log.info(">>>>>>>>>> ktrace start: %d <<<<<<<<<<",pid)
-        f = open("/proc/self/cmdline","rb")
-        t = f.read()
+        f = open(klog, "rw+")
+        f.truncate()
         f.close()
-        log.info("current run [%s]", t)
         return True
 
     def get_pids(self):
         return []
 
     def stop(self):
-        klog = "/var/log/kern.log"
         if os.path.exists(klog):
             # now upload the logfile
             log.info("Guest send kernel log -> Host")
             nf = NetlogFile("logs/kern.log")
             fd = open(klog, "rb")
             for chunk in fd:
-                nf.sock.sendall(chunk) # dirty direct send, no reconnecting
+                nf.sock.sendall(chunk)
             fd.close()
             nf.close()
         log.info(">>>>>>>>>> ktrace stop  %d <<<<<<<<<<",os.getpid())

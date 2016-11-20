@@ -63,20 +63,28 @@ def choose_package(file_name, file_path):
         result = m.from_file(file_path)
         if result.startswith("application"):
             if "x-executable" in result:
-                return "elf"
+                ftype = "elf"
             if "x-sharedlib" in result:
-                return "so"
+                ftype = "so"
             if "msword" in result:
                 return "doc"
         if result.startswith("text"):
                 if "x-python" in result:
-                    return "python"
+                    ftype = "python"
                 if "x-shellscript" in result:
-                    return "bash"
-        return "generic"
+                    ftype = "shell"
+        try:
+            m.close()
+        except:
+            pass
+        return ftype 
 
     except Exception as e:
         log.exception("choose package execpetion: %s", e)
+        try:
+            m.close()
+        except:
+            pass
         return "generic"
 
 class Analyzer:

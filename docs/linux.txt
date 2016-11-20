@@ -13,3 +13,6 @@ UBUNTU GUEST:
 HOST
     1 For Mircosoft office static 
         sudo pip install oletools
+    2 For ssdep
+        sudo apt-get install libfuzzy-dev
+        sudo pip install pydeep

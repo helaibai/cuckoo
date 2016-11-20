@@ -6,7 +6,7 @@
 
 from lib.common.abstracts import Package
 
-class PYTTHON(Package):
+class SHELL(Package):
     """python analysis package for linux."""
     def start(self, path):
-        return self.execute(["/bin/sh","-c" path])
+        return self.execute(["/bin/sh", "-c", path])
