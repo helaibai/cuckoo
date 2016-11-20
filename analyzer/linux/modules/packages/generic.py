@@ -20,7 +20,6 @@ class Generic(Package):
 
     def get_pids(self):
         probelkm_pids = set()
-
         fd = open("/var/log/kern.log")
         for line in fd:
             if not "[probelkm]" in line: continue

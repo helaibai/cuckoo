@@ -49,30 +49,30 @@ def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
         log.info("PLS IMPLEMENT DUMP, want to dump %s", file_path)
-def choose_package(path):
+def choose_package(file_name, file_path):
     """file type """
-    f = os.popen('uname -r')
-    t = f.read()
-    f.close()
-    log.debug("current kernel %s",t)
     if not magic:
-        log.debug("import python magic except; try pip install python-magic")
+        log.debug("import python magic except; try pip install python-magic in linux guest")
         return "generic" 
     try:
-        if not os.path.exists(path):
-            if path.startswith("http"):
-                return "wget"
-            return "unknow"
-            
-        m = maigc.Magic(mine=True)
-        result = m.from_file(path)
-        if "application" in result:
+        if file_name.startswith("http") or file_name.startswith("www"):
+            return "wget"
+        if not os.path.exists(file_path):
+            return "generic"
+        m = magic.Magic(mime=True)
+        result = m.from_file(file_path)
+        if result.startswith("application"):
             if "x-executable" in result:
                 return "elf"
             if "x-sharedlib" in result:
                 return "so"
             if "msword" in result:
                 return "doc"
+        if result.startswith("text"):
+                if "x-python" in result:
+                    return "python"
+                if "x-shellscript" in result:
+                    return "bash"
         return "generic"
 
     except Exception as e:
@@ -140,10 +140,9 @@ class Analyzer:
                       "it automagically.")
 
             if self.config.category == "file":
-                package = choose_package(self.config.file_name) 
+                package = choose_package(self.config.file_name, self.target) 
             else:
-                package = "wget"
-            log.debug("choose {%s}", package);
+                package = "firefox"
 
             # If we weren't able to automatically determine the proper package,
             # we need to abort the analysis.

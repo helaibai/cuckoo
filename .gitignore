@@ -1,6 +1,6 @@
 # Ignore Cuckoo Database
 db/cuckoo.db
-
+*.swp
 # Ignore Cuckoo logs
 log/*.log
 
