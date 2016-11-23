@@ -1,4 +1,4 @@
-#include "naudit.h"
+#include "ktrace.h"
 
 #define OP_JMP_REL32	0xe9
 #define OP_CALL_REL32	0xe8

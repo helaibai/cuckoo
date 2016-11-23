@@ -1,4 +1,4 @@
-#include "naudit.h"
+#include "ktrace.h"
 
 long ktrace_pid = 0;
 module_param(ktrace_pid, long, 0644);

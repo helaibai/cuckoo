@@ -1,4 +1,4 @@
-#include "naudit.h"
+#include "ktrace.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)
 

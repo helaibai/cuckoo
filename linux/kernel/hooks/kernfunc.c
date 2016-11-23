@@ -1,4 +1,4 @@
-#include "naudit.h"
+#include "ktrace.h"
 
 static struct kernsym sym_module_alloc;
 static struct kernsym sym_module_free;

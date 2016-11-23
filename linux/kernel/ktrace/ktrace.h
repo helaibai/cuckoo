@@ -20,8 +20,17 @@
 #include <linux/fs_struct.h>
 #include <linux/mount.h>
 #include <net/inet_sock.h>
+#include <linux/kprobes.h>
 
 #include <asm/uaccess.h>
 #include <asm/insn.h>
+
+int register_api(void);
+
+void unregister_api(void);
+
+#define kt_info printk
+#define kt_err  printk
+#define kt_dbg  printk
 
 #endif

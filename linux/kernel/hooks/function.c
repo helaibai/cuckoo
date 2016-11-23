@@ -1,4 +1,4 @@
-#include "naudit.h"
+#include "ktrace.h"
 
 
 struct kernsym sym_security_bprm_check;

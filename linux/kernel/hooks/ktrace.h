@@ -25,7 +25,7 @@
 #include <asm/insn.h>
 
 
-#define MODULE_NAME "naudit"
+#define MODULE_NAME "ktrace"
 #define PKPRE "[" MODULE_NAME "] "
 #define MAX_FILE_LEN 256
 
@@ -54,6 +54,8 @@ struct kernsym {
 	bool hijacked;
 	void *run;
 };
+
+extern long ktrace_pid;
 
 int symbol_hijack(struct kernsym *, const char *, unsigned long *);
 void symbol_restore(struct kernsym *);

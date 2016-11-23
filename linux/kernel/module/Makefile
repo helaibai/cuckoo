@@ -1,5 +1,5 @@
 obj-m += ktrace.o
-ktrace-objs := module.o api.o 
+ktrace-objs := kretprobe_example.o 
 
 EXTRA_CFLAGS=-DLINUX -g
 ifeq ($(shell uname -r|grep xen), 0)

@@ -1,5 +1,5 @@
-obj-m += naudit.o
-naudit-objs := hook.o  kernfunc.o  module.o  function.o  symbols.o 
+obj-m += ktrace.o
+ktrace-objs := hook.o  kernfunc.o  module.o  function.o  symbols.o 
 
 EXTRA_CFLAGS=-DLINUX -g
 ifeq ($(shell uname -r|grep xen), 0)
@@ -16,6 +16,5 @@ KERNEL_DIR := ${MODULES_DIR}/build
 
 all:
 	make -C ${KERNEL_DIR} M=$(PWD);
-	#strip --strip-debug naudit.ko
 clean:
 	make -C ${KERNEL_DIR} M=$(PWD) $@;
