@@ -1,4 +1,8 @@
 #include "naudit.h"
+
+long ktrace_pid = 0;
+module_param(ktrace_pid, long, 0644);
+
 int init_naudit(void) {
 	int ret;
 	ret = kernfunc_init();

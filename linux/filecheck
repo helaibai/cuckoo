@@ -1,0 +1,105 @@
+#!/usr/bin/python
+
+import hashlib
+import unicodedata
+import os
+import sys
+import sqlite3
+
+db_path = "./fhash.db"
+
+def file_db(db_path):
+	if os.path.isfile(db_path):
+		os.remove(db_path)
+        conn=sqlite3.connect(db_path)
+        conn.execute('''CREATE TABLE hashdb
+                (ID INT PRIMARY KEY     NOT NULL,
+                filepath            CHAR(50),
+                filehash            CHAR(50),
+                SALARY  REAL);''')
+        conn.close()
+def file_hash(filepath):
+	try:
+		if os.path.isfile(filepath):
+			with open(filepath,'rb') as f :
+				sha1ob = hashlib.md5()
+				sha1ob.update(f.read())
+				hash = sha1ob.hexdigest()
+				return hash
+		else:
+			pass
+	except:
+		pass
+		#print "Warning:open [%s] is failed." %(filepath)
+def file_list(filepath):
+	filelist = []
+	for root, dirs, files in os.walk(filepath):  
+	        for file in files:  
+	            filelist.append(os.path.join(root, file))
+	return  filelist
+def write_db(file_path,db_path):
+	test = file_list(file_path)
+	conn = sqlite3.connect(db_path)
+	ret = int(1)
+	for i in test :
+		db_value = "('%d','%s','%s')"%(ret,i,file_hash(i))
+		print "\033[1;35;48m%s\033[0m" %(db_value)
+		conn.execute("INSERT INTO hashdb (ID,filepath,filehash) VALUES "+db_value)
+		ret+=1
+	conn.commit()
+	conn.close()
+def file_hash_bj(file_path,db_path):
+	nhash={}
+	servar = 1
+	old_list=[]
+	nhashlist = file_list(file_path)
+	conn = sqlite3.connect(db_path)
+	cur = conn.cursor()
+	old = cur.execute("SELECT filepath from hashdb")
+	#old_path = cur.fetchall()
+	for i in old:
+		for sour in i:
+			line = unicodedata.normalize('NFKD',sour).encode('ascii','ignore')
+			old_list.append(line)
+	for i in old_list:
+		try:
+			nhashlist.remove(i)
+		except:
+			print "\033[1;31;48m%d.check failed   [ %s ]\033[0m" %(servar,i)
+			servar+=1
+			continue
+		nhash[i] = file_hash(i)
+		rehash = "filepath='%s' and filehash='%s'"%(i,file_hash(i))
+		cur = conn.cursor()
+		cur.execute("SELECT filepath,filehash from hashdb where "+rehash)
+		records = cur.fetchall()
+		if  records == []:
+			print "\033[1;31;48m%d.check failed   [ %s ]\033[0m" %(servar,i)
+		else:
+			print "\033[1;32;48m%d.check success  [ %s ]\033[0m"%(servar,i)
+		servar+=1
+	for fn in nhashlist:
+		print "\033[1;31;48m%d.check failed   [ %s ]\033[0m" %(servar,fn)
+		servar+=1
+		
+		
+if __name__ == '__main__':
+	try:
+		if sys.argv[1] == "-c":
+			if os.path.isdir(sys.argv[2]):
+				file_db(db_path)
+				write_db(sys.argv[2],db_path)
+			else:
+				print "warning:[%s] is not found."%(str(sys.argv[2]))
+				os._exit(2)
+		if sys.argv[1] == "-t":
+			if os.path.isdir(sys.argv[2]):
+				file_hash_bj(sys.argv[2],db_path)
+			else:
+				print "warning:[%s] is not found."%(str(sys.argv[2]))
+				os._exit(2)
+	except:
+		print "help : "
+		print " [ -c ] : create checkpoint"
+		print " [ -t ] : check dir."
+		os._exit(2)

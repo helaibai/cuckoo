@@ -1,9 +1,10 @@
 #include "naudit.h"
 
 
-struct kernsym sym_hook_stream_accept_function; 
 struct kernsym sym_security_bprm_check;
+struct kernsym sym_do_fork;
 
+extern long ktrace_pid; 
 char *hook_file_path(struct file *file, char *buf, int len)
 {
     char *p = NULL;
@@ -72,7 +73,9 @@ int hook_security_bprm_check(struct linux_binprm *bprm) {
 	int (*run)(struct linux_binprm *) = sym_security_bprm_check.run;
 	char buffer[128];
 	char *task_buffer = NULL, *tp = NULL;
-
+	if(current->pid != ktrace_pid){
+		goto out;
+	}
 	task_buffer = kmalloc(1024, GFP_KERNEL);
 	if(task_buffer == NULL){
 		tp = current->comm;
@@ -84,28 +87,21 @@ int hook_security_bprm_check(struct linux_binprm *bprm) {
 	if(task_buffer){
 		kfree(task_buffer);
 	}
+out:
 	return run(bprm);
 }
-
-int hook_stream_accept_function(struct socket *sock, struct socket *newsock, int flags)
+long hook_do_fork(unsigned long clone_flags, unsigned long stack_start, unsigned long stack_size, int __user * parent_tidptr
+, int __user * child_tidptr)
 {
-	int (*run)(struct socket*, struct socket *, int) = sym_hook_stream_accept_function.run;
-	struct inet_sock *isk = NULL;
-	int ret;
-	char *task_buffer = NULL, *tp = NULL;
-	task_buffer = kmalloc(1024, GFP_KERNEL);
-	if(task_buffer == NULL){
-		tp = current->comm;
+	long ret;
+	long (*run)(unsigned long, unsigned long, unsigned long, int __user *, int __user *) = sym_do_fork.run;
+	ret = run(clone_flags, stack_start, stack_size, parent_tidptr, child_tidptr); 
+	if(current->pid != ktrace_pid){
+		goto out;
 	}
-	ret = run(sock, newsock, flags);
-	isk = inet_sk(newsock->sk);
-	if(isk){
-		tp = hook_task_path(current, task_buffer, 1024);
-	      	printk("T[%s]:%08X:%d->%08X:%d\n",tp, isk->saddr ,ntohs(isk->sport) ,isk->daddr ,ntohs(isk->dport));
-	}
-	if(task_buffer){
-		kfree(task_buffer);
-	}
+	printk("[KTRACE]""do_fork(%08lx,%08lx,%08lx,%p, %p) = %ld\n", 
+			clone_flags, stack_start, stack_size, parent_tidptr, child_tidptr,ret);
+out:
 	return ret;
 }
 struct symhook {
@@ -115,8 +111,8 @@ struct symhook {
 };
 
 struct symhook hooks[] = {
-	{"inet_accept", &sym_hook_stream_accept_function, (unsigned long *)hook_stream_accept_function},
 	{"security_bprm_check", &sym_security_bprm_check, (unsigned long *)hook_security_bprm_check},
+	{"do_fork", &sym_do_fork, (unsigned long *)hook_do_fork},
 };
 
 void hook_syscalls(void) {
