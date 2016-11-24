@@ -1,0 +1,1 @@
+X86_64平台上，Linux的参数传递通过如下9个寄存器完成，分别为：RDI，RSI，RDX，RCX，RAX，R8，R9，R10，R11
