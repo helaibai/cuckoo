@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+
+import hashlib
+import sys
+import os
+import stat
+import bsddb
+
+DBROOT='./temp'
+POLICY='./temp'
+CONFIG_NAME='paths'
+DBNAME='sdb'
+def common_out(path, data):
+	print path,data,
+def sucess_out(path, data):
+	print '\033[1;32;40m',
+	common_out(path,data)
+	print '\033[0m'
+def false_out(path, data):
+	print '\033[1;31;40m',
+	common_out(path,data)
+	print '\033[0m'
+def sdb_init(path,file):
+	sdbenv = bsddb.db.DBEnv()
+	sdbenv.open(path, bsddb.db.DB_CREATE|bsddb.db.DB_INIT_CDB|bsddb.db.DB_INIT_MPOOL)
+	sdb = bsddb.db.DB(sdbenv)
+	print path+os.sep+file
+	sdb.open(path+os.sep+file, bsddb.db.DB_HASH, bsddb.db.DB_CREATE, 0660)
+	return sdb,sdbenv
+
+def config(configures):
+	f = open(configures)
+	lines = f.readlines()
+	f.close()
+	return lines
+
+def filehash(filename):
+	m = hashlib.md5()
+	with open(filename, 'rb') as fp:
+		while True:
+			blk = fp.read(4096)
+			if not blk : break
+			m.update(blk)
+	fp.close()
+	return m.hexdigest()
+def issame(datastr, dlist):
+	dstr = str(dlist)
+	dlen = len(dstr) - 1
+	ret =  cmp(dstr[0:dlen],datastr[0:dlen]) 
+	return ret
+def filelist(db, path ,files):
+	for f in files:
+		p = path+os.sep+f
+		if p.startswith("/cgroup") \
+		or p.startswith("/dev")  \
+		or p.startswith("/proc") \
+		or p.startswith("/sys")  \
+		or p.startswith(POLICY):
+			continue
+		if not os.path.exists(p):
+			continue
+		s = os.stat(p)
+		if not stat.S_ISREG(s[stat.ST_MODE]):
+			continue 
+		if s.st_size == 0:
+			continue
+		datalist=[]
+		datalist.append(s.st_size)
+		datalist.append(s.st_ctime)
+
+		### insert or compare between 
+		kdata = db.get(p)
+		#print p,type(kdata)
+		if kdata == None:
+			#Path not exist
+			hexstr = filehash(p)
+			datalist.append(hexstr)
+			dstring = str(datalist)
+			db.put(p, dstring)
+			false_out(p, dstring)
+		else:
+			if issame(kdata, datalist) == 0:
+				sucess_out(p,kdata)
+				continue
+			else:
+				hexstr = filehash(p)
+				datalist.append(hexstr)
+				dstring = str(datalist)
+				db.put(p, dstring)
+				false_out(p, dstring)
+
+def dirlist(db, dir):
+	for root, dirs, files in os.walk(dir):
+		filelist(db, root, files)
+
+if __name__ == '__main__':
+	sdb,sdbenv = sdb_init(DBROOT, DBNAME)
+	dirs = config(DBROOT+os.sep+CONFIG_NAME)
+	for d in dirs:
+		d = d.strip('\n')
+		if not os.path.exists(d):
+			print 'Directory [%s] not exist' % d
+			continue
+		print d
+		dirlist(sdb, d)
+	sdb.sync()
+	sdb.close()
+	sdbenv.close()
