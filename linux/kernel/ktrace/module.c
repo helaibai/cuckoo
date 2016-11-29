@@ -1,16 +1,18 @@
 #include "ktrace.h"
+
+
 int init_naudit(void) {
-    int ret = 0;
+	int ret = 0;
+	ret = register_api();
+	if(ret){
+		kt_err("register kprobe api error\n");
+	}
 	kt_info("========== Start =========\n");
-    ret = register_api();
-    if(ret){
-        kt_err("register kprobe api error\n");
-    }
 	return 0;
 }
 static void exit_naudit(void) {
-    unregister_api();
 	kt_info("==========  End  =========\n");
+	unregister_api();
 	return;
 }
 module_init(init_naudit);
