@@ -289,6 +289,34 @@ static int entry_handler(struct kretprobe_instance *kri, struct pt_regs *regs)
 		unsigned int flags = (unsigned int)regs->si;
 		size += sprintf(ks->buffer+size, "%s,%08x",name_user,flags);
 	}
+	if(strcmp(function, "sys_stat") == 0){
+		char *filename = (char *)regs->di;
+		void *stat_buffer = (void *)(regs->si);
+		size += sprintf(ks->buffer+size, "%s,%p",filename,stat_buffer);
+	}
+	if(strcmp(function, "sys_newstat") == 0){
+		char *filename = (char *)regs->di;
+		void *stat_buffer = (void *)(regs->si);
+		size += sprintf(ks->buffer+size, "%s,%p",filename,stat_buffer);
+	}
+	if(strcmp(function, "sys_fstat") == 0){
+		int fd = (int)regs->di;
+		void *stat_buffer = (void*)(regs->di);
+		size += sprintf(ks->buffer+size, "%d,%p",fd,stat_buffer);
+	}
+	if(strcmp(function, "sys_newfstat") == 0){
+		int fd = (int)regs->di;
+		void *stat_buffer = (void*)(regs->di);
+		size += sprintf(ks->buffer+size, "%d,%p",fd,stat_buffer);
+	}
+	if(strcmp(function, "sys_reboot") == 0){
+		int magic1 = (int)regs->di;
+		int magic2 = (int)regs->si;
+		unsigned int cmd = (unsigned int)regs->dx;
+		void *arg = (void *)regs->cx;
+		size += sprintf(ks->buffer+size, "%d,%d, %u,%p",magic1, magic2, cmd, arg);
+		printk("%s",function);
+	}
 	ks->size = size;
 out:
 	return ret;
@@ -333,6 +361,11 @@ static struct kretprobe apis[] = {
 	{.kp = { .symbol_name = "sys_nice",},},
 	{.kp = { .symbol_name = "load_module",},},
 	{.kp = { .symbol_name = "sys_delete_module",},},
+	{.kp = { .symbol_name = "sys_stat",},},
+	{.kp = { .symbol_name = "sys_newstat",},},
+	{.kp = { .symbol_name = "sys_fstat",},},
+	{.kp = { .symbol_name = "sys_newfstat",},},
+	{.kp = { .symbol_name = "sys_reboot",},},
 };
 int register_api(void)
 {
