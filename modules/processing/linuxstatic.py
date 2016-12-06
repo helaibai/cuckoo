@@ -136,9 +136,8 @@ class Linuxstatic(Processing):
         """Run linux static"""
         self.key = "linuxstatic"
         static = {}
-        log.debug("Run into linux static")
+        log.debug("linux elf static processing into")
         if "ELF" in File(self.file_path).get_type():
             static.update(ELF(self.file_path).run())
-        #print static
-        log.debug("Leave off linux static")
+        log.debug("linux elf static processing out")
         return static

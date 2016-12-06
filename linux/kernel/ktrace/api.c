@@ -327,7 +327,7 @@ static int ktrace_ret_handler(struct kretprobe_instance *kri, struct pt_regs *re
 	struct ktrace_struct *ks;
 	const char *function = NULL; 
 	ks = (struct ktrace_struct *)kri->data;
-	printk("%s) = %ld\n",ks->buffer, retval);
+	printk("%s)=%ld\n",ks->buffer, retval);
 	function = kri->rp->kp.symbol_name;
 	if(strcmp(function, "do_fork") == 0){
 		if(ks->private == NULL && ktrace_process_add(retval) != 0){

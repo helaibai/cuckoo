@@ -41,8 +41,8 @@ class KTRACE(Auxiliary):
         return []
 
     def stop(self):
-        log.info("ktrace stop() %d" % os.getpid())
         os.system("/sbin/rmmod ktrace")
+        log.info("ktrace stop() %d" % os.getpid())
         os.system("/bin/dmesg > /var/log/ktrace.log")
         upload_to_host("/var/log/ktrace.log","logs/ktrace.log")
         upload_to_host("/proc/version","files/version")

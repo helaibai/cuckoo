@@ -61,6 +61,8 @@ def choose_package(file_name, file_path):
             return "generic"
         m = magic.Magic(mime=True)
         result = m.from_file(file_path)
+        log.info("package magic return %s", result)
+        ftype = "generic"
         if result.startswith("application"):
             if "x-executable" in result:
                 ftype = "elf"

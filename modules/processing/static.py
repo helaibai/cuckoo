@@ -667,9 +667,7 @@ class Static(Processing):
         if self.task["category"] != "file" or \
                 not os.path.exists(self.file_path):
             return
-
         package = self.task.get("package")
-
         if self.task["category"] == "file":
             ext = os.path.splitext(self.task["target"])[1].lstrip(".").lower()
         else:
